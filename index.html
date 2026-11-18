@@ -1,96 +1,189 @@
-<!doctype html>
+
+
+<!DOCTYPE html>
+
 <html lang="en">
+
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#10151f">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Steam Deck Remote">
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+
+  <meta name="theme-color" content="#101522">
+
+  <title>SteamOS Web M5</title>
+
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
   <link rel="stylesheet" href="styles.css">
-  <title>Steam Deck Remote</title>
+
 </head>
+
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="brand"><span class="brand-mark">S</span><span>STEAM <b>REMOTE</b></span></div>
-      <div class="top-actions">
-        <span class="connection-pill" id="connectionStatus"><i></i> Not connected</span>
-        <button class="icon-button" id="settingsOpen" aria-label="Settings">⚙</button>
+
+  <header class="topbar">
+
+    <div class="brand">
+
+      <span class="brand-icon">S</span>
+
+      <div>
+
+        <h1>SteamOS Web M5</h1>
+
+        <p>Local Linux Gaming Environment</p>
+
       </div>
-    </header>
 
-    <main>
-      <section class="hero">
-        <div class="hero-copy">
-          <div class="eyebrow">YOUR LOCAL GAME STREAM</div>
-          <h1>Play your library.<br><span>Your way.</span></h1>
-          <p>Connect to your home gaming server and stream your PC games to this iPad.</p>
-          <button class="primary-button" id="connectButton">Connect to gaming server <span>→</span></button>
-          <small id="serverHint">Set your Steam Headless server address in Settings.</small>
+    </div>
+
+    <span class="status" id="status">ENGINE NOT LOADED</span>
+
+  </header>
+
+  <main class="container">
+
+    <section class="welcome">
+
+      <p class="eyebrow">YOUR LOCAL GAMING SYSTEM</p>
+
+      <h2>Welcome to SteamOS Web</h2>
+
+      <p>Run an experimental Linux environment directly inside your browser.</p>
+
+    </section>
+
+    <section class="panel">
+
+      <h2>System Setup</h2>
+
+      <p class="description">
+
+        Select a compatible Linux ISO image to prepare your virtual machine.
+
+      </p>
+
+      <label class="file-label" for="isoFile">
+
+        <span class="file-icon">＋</span>
+
+        <span id="fileName">Choose Linux ISO file</span>
+
+      </label>
+
+      <input type="file" id="isoFile" accept=".iso,application/octet-stream">
+
+      <div class="button-row">
+
+        <button id="bootButton" class="primary" disabled>
+
+          Start Linux
+
+        </button>
+
+        <button id="stopButton" class="secondary" disabled>
+
+          Stop
+
+        </button>
+
+      </div>
+
+    </section>
+
+    <section class="panel">
+
+      <div class="section-heading">
+
+        <h2>Virtual Machine</h2>
+
+        <span class="live-indicator" id="vmStatus">OFFLINE</span>
+
+      </div>
+
+      <div id="screen" class="screen">
+
+        <div class="screen-message">
+
+          <div class="screen-symbol">⌘</div>
+
+          <h3>System Ready</h3>
+
+          <p>Select a Linux ISO and start the virtual machine.</p>
+
         </div>
-        <div class="hero-art" aria-hidden="true">
-          <div class="orb orb-one"></div><div class="orb orb-two"></div>
-          <div class="console-card"><div class="screen-glow"></div><div class="console-screen"><div class="screen-logo">S</div><div class="screen-lines"></div></div><div class="console-controls"><span></span><span></span><span></span><span></span></div></div>
-        </div>
-      </section>
 
-      <section class="section-heading">
-        <div><div class="eyebrow">READY WHEN YOU ARE</div><h2>Your game space</h2></div>
-        <span class="section-note">LOCAL STREAMING</span>
-      </section>
+      </div>
 
-      <section class="quick-grid">
-        <article class="quick-card">
-          <div class="quick-icon">▦</div><h3>Steam library</h3>
-          <p>Your installed games will appear here when the server library integration is connected.</p>
-          <span class="tag">SERVER LIBRARY · COMING NEXT</span>
-        </article>
-        <article class="quick-card">
-          <div class="quick-icon">⌁</div><h3>Touch controls</h3>
-          <p>Use the on-screen controls in a supported streaming session, or connect a Bluetooth controller.</p>
-          <span class="tag">TOUCH + GAMEPAD</span>
-        </article>
-        <article class="quick-card">
-          <div class="quick-icon">◉</div><h3>Stream quality</h3>
-          <p>We'll tune resolution, frame rate, and bitrate after testing your local Wi-Fi and server GPU.</p>
-          <span class="tag">IPAD PRO DISPLAY</span>
-        </article>
-      </section>
+      <div class="button-row">
 
-      <section class="bottom-row">
-        <div><div class="eyebrow">FIRST-TIME SETUP</div><h2>One local server. Your iPad as the screen.</h2><p>For the first milestone, connect both devices to the same Wi-Fi network and open your Steam Headless portal.</p></div>
-        <button class="secondary-button" id="setupButton">Server setup guide ↗</button>
-      </section>
-    </main>
+        <button id="fullscreenButton" class="secondary">
 
-    <nav class="tabbar" aria-label="Main navigation">
-      <button class="tab active" data-tab="home"><span>⌂</span>Home</button>
-      <button class="tab" data-tab="library"><span>▦</span>Library</button>
-      <button class="tab" data-tab="controller"><span>✣</span>Controls</button>
-      <button class="tab" data-tab="settings"><span>⚙</span>Settings</button>
-    </nav>
-  </div>
+          Fullscreen
 
-  <dialog id="settingsDialog">
-    <form method="dialog" class="dialog-card" id="settingsForm">
-      <div class="dialog-head"><div><div class="eyebrow">LOCAL CONNECTION</div><h2>Server settings</h2></div><button class="icon-button" value="cancel" aria-label="Close">✕</button></div>
-      <label for="serverUrl">Steam Headless portal URL</label>
-      <input id="serverUrl" type="url" inputmode="url" placeholder="https://192.168.1.150:8483" autocomplete="url">
-      <p class="help">Use the local IP address of the computer running Steam Headless. Keep the iPad and server on the same Wi-Fi for the first test.</p>
-      <div class="notice"><b>Security note</b><br>Steam Headless uses HTTPS and may show a self-signed certificate warning on first connection. Only proceed if this is your own trusted home server.</div>
-      <div class="dialog-actions"><button class="secondary-button" value="cancel">Cancel</button><button class="primary-button" id="saveSettings" value="default">Save server</button></div>
-    </form>
-  </dialog>
+        </button>
 
-  <dialog id="infoDialog">
-    <form method="dialog" class="dialog-card">
-      <div class="dialog-head"><h2 id="infoTitle">Coming next</h2><button class="icon-button" value="cancel" aria-label="Close">✕</button></div>
-      <p id="infoText"></p><button class="primary-button full" value="cancel">Got it</button>
-    </form>
-  </dialog>
+        <button id="ctrlAltDelButton" class="secondary">
+
+          Ctrl + Alt + Del
+
+        </button>
+
+      </div>
+
+    </section>
+
+    <section class="panel system-info">
+
+      <h2>Device Information</h2>
+
+      <div class="info-row">
+
+        <span>Platform</span>
+
+        <strong>iPadOS</strong>
+
+      </div>
+
+      <div class="info-row">
+
+        <span>Architecture</span>
+
+        <strong>Apple Silicon</strong>
+
+      </div>
+
+      <div class="info-row">
+
+        <span>Execution</span>
+
+        <strong>Browser / WebAssembly</strong>
+
+      </div>
+
+      <div class="info-row">
+
+        <span>Connection</span>
+
+        <strong>Local Device</strong>
+
+      </div>
+
+    </section>
+
+    <p class="notice">
+
+      Experimental prototype. A compatible emulator engine and Linux image
+
+      are required. Steam and commercial game compatibility are not yet available.
+
+    </p>
+
+  </main>
+
   <script src="app.js"></script>
+
 </body>
+
 </html>
