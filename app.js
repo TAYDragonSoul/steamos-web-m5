@@ -1,73 +1,127 @@
-const $ = (id) => document.getElementById(id);
-const settingsDialog = $("settingsDialog");
-const infoDialog = $("infoDialog");
-const storedUrl = localStorage.getItem("steamRemoteServer") || "";
-$("serverUrl").value = storedUrl;
 
-function normalizeUrl(value) {
-  return value.trim().replace(/\/+$/, "");
-}
-function updateStatus() {
-  const url = normalizeUrl(localStorage.getItem("steamRemoteServer") || "");
-  const pill = $("connectionStatus");
-  const hint = $("serverHint");
-  if (url) {
-    pill.classList.add("connected");
-    pill.innerHTML = "<i></i> Server saved";
-    hint.textContent = "Server saved: " + url;
+const isoInput = document.getElementById("isoFile");
+const fileName = document.getElementById("fileName");
+const bootButton = document.getElementById("bootButton");
+const stopButton = document.getElementById("stopButton");
+const fullscreenButton = document.getElementById("fullscreenButton");
+const ctrlAltDelButton = document.getElementById("ctrlAltDelButton");
+const screen = document.getElementById("screen");
+const statusText = document.getElementById("status");
+const vmStatus = document.getElementById("vmStatus");
+
+let isoBuffer = null;
+let emulator = null;
+
+isoInput.addEventListener("change", async () => {
+  const file = isoInput.files[0];
+
+  if (!file) return;
+
+  fileName.textContent = file.name;
+  statusText.textContent = "ISO SELECTED";
+
+  try {
+    isoBuffer = await file.arrayBuffer();
+    bootButton.disabled = false;
+  } catch (error) {
+    statusText.textContent = "FILE ERROR";
+    alert("Could not read this ISO file.");
+  }
+});
+
+bootButton.addEventListener("click", async () => {
+  if (!isoBuffer) return;
+
+  if (typeof V86 === "undefined") {
+    alert(
+      "The emulator engine is not installed yet. " +
+      "We will add the v86_64 engine in the next setup step."
+    );
+    return;
+  }
+
+  bootButton.disabled = true;
+  statusText.textContent = "STARTING";
+  vmStatus.textContent = "BOOTING";
+
+  screen.innerHTML = "";
+
+  try {
+    emulator = new V86({
+      wasm_path: "./vendor/v86.wasm",
+      memory_size: 512 * 1024 * 1024,
+      vga_memory_size: 8 * 1024 * 1024,
+      screen_container: screen,
+      bios: {
+        url: "./vendor/seabios.bin"
+      },
+      vga_bios: {
+        url: "./vendor/vgabios.bin"
+      },
+      cdrom: {
+        buffer: isoBuffer
+      },
+      autostart: true
+    });
+
+    emulator.add_listener("emulator-ready", () => {
+      statusText.textContent = "ENGINE READY";
+      vmStatus.textContent = "RUNNING";
+      stopButton.disabled = false;
+    });
+
+    emulator.add_listener("emulator-stopped", () => {
+      statusText.textContent = "STOPPED";
+      vmStatus.textContent = "OFFLINE";
+      bootButton.disabled = false;
+      stopButton.disabled = true;
+    });
+
+  } catch (error) {
+    console.error(error);
+    statusText.textContent = "START ERROR";
+    vmStatus.textContent = "ERROR";
+    bootButton.disabled = false;
+
+    alert("The emulator could not start. Check that the engine files are installed.");
+  }
+});
+
+stopButton.addEventListener("click", () => {
+  if (emulator) {
+    emulator.stop();
+    emulator = null;
+  }
+
+  statusText.textContent = "STOPPED";
+  vmStatus.textContent = "OFFLINE";
+  bootButton.disabled = !isoBuffer;
+  stopButton.disabled = true;
+});
+
+fullscreenButton.addEventListener("click", () => {
+  if (screen.requestFullscreen) {
+    screen.requestFullscreen();
   } else {
-    pill.classList.remove("connected");
-    pill.innerHTML = "<i></i> Not connected";
-    hint.textContent = "Set your Steam Headless server address in Settings.";
+    alert("Fullscreen is not available in this browser.");
   }
-}
-function showInfo(title, message) {
-  $("infoTitle").textContent = title;
-  $("infoText").textContent = message;
-  infoDialog.showModal();
-}
-function connect() {
-  const url = normalizeUrl(localStorage.getItem("steamRemoteServer") || "");
-  if (!url) {
-    settingsDialog.showModal();
-    return;
+});
+
+ctrlAltDelButton.addEventListener("click", () => {
+  if (emulator && emulator.keyboard) {
+    emulator.keyboard.send_scancodes([
+      0x1d, 0x38, 0xe0, 0x53,
+      0xe0, 0xd3, 0xb8, 0x9d
+    ]);
+  } else {
+    alert("Start the virtual machine first.");
   }
-  // Steam Headless serves its own authenticated browser portal on port 8483.
-  // This deliberate handoff avoids pretending an unsupported cross-origin embed is integrated.
-  window.location.href = url;
-}
-$("settingsOpen").addEventListener("click", () => settingsDialog.showModal());
-$("connectButton").addEventListener("click", connect);
-$("saveSettings").addEventListener("click", (event) => {
-  event.preventDefault();
-  const value = normalizeUrl($("serverUrl").value);
-  if (!value || !/^https?:\/\//i.test(value)) {
-    showInfo("Check the server address", "Enter the full URL, for example https://192.168.1.150:8483");
-    return;
-  }
-  localStorage.setItem("steamRemoteServer", value);
-  settingsDialog.close();
-  updateStatus();
 });
-$("setupButton").addEventListener("click", () => {
-  showInfo("Server setup", "The gaming server must run Steam Headless on a Linux PC with a supported GPU and hardware video encoder. Install and test Steam Headless first, then enter its local HTTPS address here. Keep the iPad and server on the same Wi-Fi for the first connection.");
-});
-document.querySelectorAll(".tab").forEach((button) => {
-  button.addEventListener("click", () => {
-    document.querySelectorAll(".tab").forEach((tab) => tab.classList.remove("active"));
-    button.classList.add("active");
-    const tab = button.dataset.tab;
-    if (tab === "home") return;
-    const messages = {
-      library: "Your real Steam library will be populated from the gaming server in the next integration stage.",
-      controller: "Connect a Bluetooth controller in iPad Settings → Bluetooth. Safari gamepad input and touch-to-gamepad forwarding must be tested against the server streaming client before we promise full compatibility.",
-      settings: null
-    };
-    if (tab === "settings") settingsDialog.showModal();
-    else showInfo(tab === "library" ? "Game library" : "Controls", messages[tab]);
-  });
-});
+
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(error => {
+      console.log("Service worker registration failed:", error);
+    });
+  });
 }
-updateStatus();
