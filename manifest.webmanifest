@@ -1,22 +1,13 @@
+
 {
-  "name": "Steam Remote \u2014 Local Cloud Gaming",
-  "short_name": "Steam Remote",
-  "description": "A home-screen gaming dashboard for streaming your local Steam library to iPad.",
+  "name": "SteamOS Web M5",
+  "short_name": "SteamOS M5",
+  "description": "Local Linux gaming environment for iPad",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "orientation": "landscape",
-  "background_color": "#10151f",
-  "theme_color": "#10151f",
-  "icons": [
-    {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
+  "background_color": "#0b1020",
+  "theme_color": "#101522",
+  "icons": []
 }
