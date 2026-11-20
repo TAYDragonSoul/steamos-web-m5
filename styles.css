@@ -38,14 +38,11 @@ body {
 }
 
 .brand-icon {
-  display: grid;
-  place-items: center;
+  display: block;
   width: 44px;
   height: 44px;
   border-radius: 13px;
-  background: linear-gradient(135deg, #263d85, #b32c91);
-  font-size: 25px;
-  font-weight: 900;
+  object-fit: cover;
 }
 
 .brand h1 {
